@@ -51,11 +51,11 @@
             "type": "String"
         },
         "storageAccounts_storageaccountcustomerd8dad_name": {
-            "defaultValue": "sa98017634alt",
+            "defaultValue": "sa98017634",
             "type": "String"
         },
         "storageAccounts_storageaccountcustomerda280_name": {
-            "defaultValue": "sa98017634",
+            "defaultValue": "sa98017634alt",
             "type": "String"
         },
         "actionGroups_Application_Insights_Smart_Detection_name": {
