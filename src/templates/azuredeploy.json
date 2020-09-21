@@ -1,1520 +1,1542 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-      "sites_customer_demo_name": {
-          "defaultValue": "customer-demo-webapp",
-          "type": "String"
-      },
-      "profiles_customer_demo_name": {
-          "defaultValue": "customer-demo-cdn",
-          "type": "String"
-      },
-      "sites_customer_demo_germany_name": {
-          "defaultValue": "customer-demo-germany",
-          "type": "String"
-      },
-      "frontdoors_customer_demo_name": {
-          "defaultValue": "customer-demo-webapp",
-          "type": "String"
-      },
-      "components_customer_demo_name": {
-          "defaultValue": "customer-demo-components",
-          "type": "String"
-      },
-      "serverfarms_ASP_customerdemo_84e5_name": {
-          "defaultValue": "ASP-customerdemo-84e5",
-          "type": "String"
-      },
-      "serverfarms_ASP_customerdemo_aa82_name": {
-          "defaultValue": "ASP-customerdemo-aa82",
-          "type": "String"
-      },
-      "sites_customer_demo_client_eastus_name": {
-          "defaultValue": "customer-demo-client-eastus",
-          "type": "String"
-      },
-      "virtualNetworks_customer_demo_vnet_name": {
-          "defaultValue": "customer-demo-vnet",
-          "type": "String"
-      },
-      "publicIPAddresses_customer_demo_pip_name": {
-          "defaultValue": "customer-demo-pip",
-          "type": "String"
-      },
-      "applicationGateways_customer_demo_ag_name": {
-          "defaultValue": "customer-demo-ag",
-          "type": "String"
-      },
-      "storageAccounts_storageaccountcustomerd8dad_name": {
-          "defaultValue": "sa98017634",
-          "type": "String"
-      },
-      "storageAccounts_storageaccountcustomerda280_name": {
-          "defaultValue": "sa98017634alt",
-          "type": "String"
-      },
-      "actionGroups_Application_Insights_Smart_Detection_name": {
-          "defaultValue": "Application Insights Smart Detection",
-          "type": "String"
-      },
-      "ApplicationGatewayWebApplicationFirewallPolicies_wafpolicyNew_name": {
-          "defaultValue": "wafpolicyNew",
-          "type": "String"
-      },
-      "smartdetectoralertrules_failure_anomalies___customer_demo_name": {
-          "defaultValue": "failure anomalies - customer-demo",
-          "type": "String"
-      },
-      "frontdoorwebapplicationfirewallpolicies_customerdemod3cc1b8258534f82b45ba23351bfa6a0_name": {
-          "defaultValue": "customerdemod3cc1b8258534f82b45ba23351bfa6a0",
-          "type": "String"
-      },
-      "serverfarms_ASP_Development_9ad4_externalid": {
-          "defaultValue": "/subscriptions/15561d27-5df0-4f7b-9cb8-a4a771b9fd71/resourceGroups/Development/providers/Microsoft.Web/serverfarms/ASP-Development-9ad4",
-          "type": "String"
-      }
-  },
-  "variables": {},
-  "resources": [
-      {
-          "type": "Microsoft.Cdn/profiles",
-          "apiVersion": "2020-04-15",
-          "name": "[parameters('profiles_customer_demo_name')]",
-          "location": "EastUs",
-          "sku": {
-              "name": "Standard_Microsoft"
-          },
-          "properties": {}
-      },
-      {
-          "type": "microsoft.insights/actionGroups",
-          "apiVersion": "2019-03-01",
-          "name": "[parameters('actionGroups_Application_Insights_Smart_Detection_name')]",
-          "location": "Global",
-          "properties": {
-              "groupShortName": "SmartDetect",
-              "enabled": true,
-              "emailReceivers": [],
-              "smsReceivers": [],
-              "webhookReceivers": [],
-              "itsmReceivers": [],
-              "azureAppPushReceivers": [],
-              "automationRunbookReceivers": [],
-              "voiceReceivers": [],
-              "logicAppReceivers": [],
-              "azureFunctionReceivers": []
-          }
-      },
-      {
-          "type": "microsoft.insights/components",
-          "apiVersion": "2018-05-01-preview",
-          "name": "[parameters('components_customer_demo_name')]",
-          "location": "eastus",
-          "kind": "web",
-          "properties": {
-              "Application_Type": "web",
-              "Request_Source": "IbizaWebAppExtensionCreate",
-              "RetentionInDays": 90,
-              "publicNetworkAccessForIngestion": "Enabled",
-              "publicNetworkAccessForQuery": "Enabled"
-          }
-      },
-      {
-          "type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
-          "apiVersion": "2020-05-01",
-          "name": "[parameters('ApplicationGatewayWebApplicationFirewallPolicies_wafpolicyNew_name')]",
-          "location": "eastus",
-          "properties": {
-              "customRules": [
-                  {
-                      "name": "denyGermany",
-                      "priority": 10,
-                      "ruleType": "MatchRule",
-                      "action": "Block",
-                      "matchConditions": [
-                          {
-                              "matchVariables": [
-                                  {
-                                      "variableName": "RemoteAddr"
-                                  }
-                              ],
-                              "operator": "GeoMatch",
-                              "negationConditon": false,
-                              "matchValues": [
-                                  "DE"
-                              ],
-                              "transforms": [
-                                  "Lowercase"
-                              ]
-                          }
-                      ]
-                  }
-              ],
-              "policySettings": {
-                  "requestBodyCheck": true,
-                  "maxRequestBodySizeInKb": 128,
-                  "fileUploadLimitInMb": 100,
-                  "state": "Enabled",
-                  "mode": "Prevention"
-              },
-              "managedRules": {
-                  "managedRuleSets": [
-                      {
-                          "ruleSetType": "OWASP",
-                          "ruleSetVersion": "3.0",
-                          "ruleGroupOverrides": []
-                      }
-                  ],
-                  "exclusions": []
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Network/frontdoorwebapplicationfirewallpolicies",
-          "apiVersion": "2020-04-01",
-          "name": "[parameters('frontdoorwebapplicationfirewallpolicies_customerdemod3cc1b8258534f82b45ba23351bfa6a0_name')]",
-          "location": "Global",
-          "properties": {
-              "policySettings": {
-                  "enabledState": "Enabled",
-                  "mode": "Prevention",
-                  "customBlockResponseStatusCode": 403
-              },
-              "customRules": {
-                  "rules": [
-                      {
-                          "name": "GeoFilter",
-                          "enabledState": "Enabled",
-                          "priority": 100,
-                          "ruleType": "MatchRule",
-                          "rateLimitDurationInMinutes": 1,
-                          "rateLimitThreshold": 100,
-                          "matchConditions": [
-                              {
-                                  "matchVariable": "RemoteAddr",
-                                  "operator": "GeoMatch",
-                                  "negateCondition": false,
-                                  "matchValue": [
-                                      "DE"
-                                  ],
-                                  "transforms": []
-                              }
-                          ],
-                          "action": "Block"
-                      }
-                  ]
-              },
-              "managedRules": {
-                  "managedRuleSets": [
-                      {
-                          "ruleSetType": "DefaultRuleSet",
-                          "ruleSetVersion": "1.0",
-                          "ruleGroupOverrides": [],
-                          "exclusions": []
-                      }
-                  ]
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Network/publicIPAddresses",
-          "apiVersion": "2020-05-01",
-          "name": "[parameters('publicIPAddresses_customer_demo_pip_name')]",
-          "location": "eastus",
-          "sku": {
-              "name": "Standard"
-          },
-          "properties": {
-              "ipAddress": "52.188.137.202",
-              "publicIPAddressVersion": "IPv4",
-              "publicIPAllocationMethod": "Static",
-              "idleTimeoutInMinutes": 4,
-              "dnsSettings": {
-                  "domainNameLabel": "customer-demo",
-                  "fqdn": "customer-demo.eastus.cloudapp.azure.com"
-              },
-              "ipTags": []
-          }
-      },
-      {
-          "type": "Microsoft.Network/virtualNetworks",
-          "apiVersion": "2020-05-01",
-          "name": "[parameters('virtualNetworks_customer_demo_vnet_name')]",
-          "location": "eastus",
-          "properties": {
-              "addressSpace": {
-                  "addressPrefixes": [
-                      "172.16.0.0/16"
-                  ]
-              },
-              "subnets": [
-                  {
-                      "name": "default",
-                      "properties": {
-                          "addressPrefix": "172.16.0.0/24",
-                          "delegations": [],
-                          "privateEndpointNetworkPolicies": "Enabled",
-                          "privateLinkServiceNetworkPolicies": "Enabled"
-                      }
-                  },
-                  {
-                      "name": "gateway",
-                      "properties": {
-                          "addressPrefix": "172.16.1.0/24",
-                          "delegations": [],
-                          "privateEndpointNetworkPolicies": "Enabled",
-                          "privateLinkServiceNetworkPolicies": "Enabled"
-                      }
-                  }
-              ],
-              "virtualNetworkPeerings": [],
-              "enableDdosProtection": false,
-              "enableVmProtection": false
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts",
-          "apiVersion": "2019-06-01",
-          "name": "[parameters('storageAccounts_storageaccountcustomerd8dad_name')]",
-          "location": "germanywestcentral",
-          "sku": {
-              "name": "Standard_LRS",
-              "tier": "Standard"
-          },
-          "kind": "Storage",
-          "properties": {
-              "networkAcls": {
-                  "bypass": "AzureServices",
-                  "virtualNetworkRules": [],
-                  "ipRules": [],
-                  "defaultAction": "Allow"
-              },
-              "supportsHttpsTrafficOnly": true,
-              "encryption": {
-                  "services": {
-                      "file": {
-                          "keyType": "Account",
-                          "enabled": true
-                      },
-                      "blob": {
-                          "keyType": "Account",
-                          "enabled": true
-                      }
-                  },
-                  "keySource": "Microsoft.Storage"
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts",
-          "apiVersion": "2019-06-01",
-          "name": "[parameters('storageAccounts_storageaccountcustomerda280_name')]",
-          "location": "eastus",
-          "sku": {
-              "name": "Standard_LRS",
-              "tier": "Standard"
-          },
-          "kind": "Storage",
-          "properties": {
-              "networkAcls": {
-                  "bypass": "AzureServices",
-                  "virtualNetworkRules": [],
-                  "ipRules": [],
-                  "defaultAction": "Allow"
-              },
-              "supportsHttpsTrafficOnly": true,
-              "encryption": {
-                  "services": {
-                      "file": {
-                          "keyType": "Account",
-                          "enabled": true
-                      },
-                      "blob": {
-                          "keyType": "Account",
-                          "enabled": true
-                      }
-                  },
-                  "keySource": "Microsoft.Storage"
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Web/serverfarms",
-          "apiVersion": "2018-02-01",
-          "name": "[parameters('serverfarms_ASP_customerdemo_84e5_name')]",
-          "location": "Germany West Central",
-          "sku": {
-              "name": "Y1",
-              "tier": "Dynamic",
-              "size": "Y1",
-              "family": "Y",
-              "capacity": 0
-          },
-          "kind": "functionapp",
-          "properties": {
-              "perSiteScaling": false,
-              "maximumElasticWorkerCount": 1,
-              "isSpot": false,
-              "reserved": false,
-              "isXenon": false,
-              "hyperV": false,
-              "targetWorkerCount": 0,
-              "targetWorkerSizeId": 0
-          }
-      },
-      {
-          "type": "Microsoft.Web/serverfarms",
-          "apiVersion": "2018-02-01",
-          "name": "[parameters('serverfarms_ASP_customerdemo_aa82_name')]",
-          "location": "East US",
-          "sku": {
-              "name": "Y1",
-              "tier": "Dynamic",
-              "size": "Y1",
-              "family": "Y",
-              "capacity": 0
-          },
-          "kind": "functionapp",
-          "properties": {
-              "perSiteScaling": false,
-              "maximumElasticWorkerCount": 1,
-              "isSpot": false,
-              "reserved": false,
-              "isXenon": false,
-              "hyperV": false,
-              "targetWorkerCount": 0,
-              "targetWorkerSizeId": 0
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites",
-          "apiVersion": "2018-11-01",
-          "name": "[parameters('sites_customer_demo_name')]",
-          "location": "East US",
-          "kind": "app",
-          "properties": {
-              "enabled": true,
-              "hostNameSslStates": [
-                  {
-                      "name": "[concat(parameters('sites_customer_demo_name'), '.azurewebsites.net')]",
-                      "sslState": "Disabled",
-                      "hostType": "Standard"
-                  },
-                  {
-                      "name": "[concat(parameters('sites_customer_demo_name'), '.scm.azurewebsites.net')]",
-                      "sslState": "Disabled",
-                      "hostType": "Repository"
-                  }
-              ],
-              "serverFarmId": "[parameters('serverfarms_ASP_Development_9ad4_externalid')]",
-              "reserved": false,
-              "isXenon": false,
-              "hyperV": false,
-              "siteConfig": {},
-              "scmSiteAlsoStopped": false,
-              "clientAffinityEnabled": true,
-              "clientCertEnabled": false,
-              "hostNamesDisabled": false,
-              "containerSize": 0,
-              "dailyMemoryTimeQuota": 0,
-              "httpsOnly": false,
-              "redundancyMode": "None"
-          }
-      },
-      {
-          "type": "Microsoft.Cdn/profiles/endpoints",
-          "apiVersion": "2020-04-15",
-          "name": "[concat(parameters('profiles_customer_demo_name'), '/', parameters('profiles_customer_demo_name'))]",
-          "location": "EastUs",
-          "dependsOn": [
-              "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_customer_demo_name'))]"
-          ],
-          "properties": {
-              "originHostHeader": "customer-demo-webapp.azurewebsites.net",
-              "isHttpAllowed": true,
-              "isHttpsAllowed": true,
-              "queryStringCachingBehavior": "IgnoreQueryString",
-              "origins": [
-                  {
-                      "name": "customer-demo-webapp-azurewebsites-net",
-                      "properties": {
-                          "hostName": "customer-demo-webapp.azurewebsites.net",
-                          "httpPort": 80,
-                          "httpsPort": 443,
-                          "originHostHeader": "customer-demo-webapp.azurewebsites.net",
-                          "priority": 1,
-                          "weight": 1000,
-                          "enabled": true
-                      }
-                  }
-              ],
-              "originGroups": [],
-              "contentTypesToCompress": [
-                  "application/eot",
-                  "application/font",
-                  "application/font-sfnt",
-                  "application/javascript",
-                  "application/json",
-                  "application/opentype",
-                  "application/otf",
-                  "application/pkcs7-mime",
-                  "application/truetype",
-                  "application/ttf",
-                  "application/vnd.ms-fontobject",
-                  "application/xhtml+xml",
-                  "application/xml",
-                  "application/xml+rss",
-                  "application/x-font-opentype",
-                  "application/x-font-truetype",
-                  "application/x-font-ttf",
-                  "application/x-httpd-cgi",
-                  "application/x-javascript",
-                  "application/x-mpegurl",
-                  "application/x-opentype",
-                  "application/x-otf",
-                  "application/x-perl",
-                  "application/x-ttf",
-                  "font/eot",
-                  "font/ttf",
-                  "font/otf",
-                  "font/opentype",
-                  "image/svg+xml",
-                  "text/css",
-                  "text/csv",
-                  "text/html",
-                  "text/javascript",
-                  "text/js",
-                  "text/plain",
-                  "text/richtext",
-                  "text/tab-separated-values",
-                  "text/xml",
-                  "text/x-script",
-                  "text/x-component",
-                  "text/x-java-source"
-              ],
-              "isCompressionEnabled": true,
-              "geoFilters": [
-                  {
-                      "relativePath": "/",
-                      "action": "Block",
-                      "countryCodes": [
-                          "DE"
-                      ]
-                  }
-              ],
-              "urlSigningKeys": []
-          }
-      },
-      {
-          "type": "Microsoft.Network/frontdoors",
-          "apiVersion": "2020-05-01",
-          "name": "[parameters('frontdoors_customer_demo_name')]",
-          "location": "Global",
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', parameters('frontdoorwebapplicationfirewallpolicies_customerdemod3cc1b8258534f82b45ba23351bfa6a0_name'))]"
-          ],
-          "properties": {
-              "resourceState": "Enabled",
-              "backendPools": [
-                  {
-                      "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), '/BackendPools/defaultPool')]",
-                      "name": "defaultPool",
-                      "properties": {
-                          "backends": [
-                              {
-                                  "address": "[concat(parameters('frontdoors_customer_demo_name'), '.azurewebsites.net')]",
-                                  "httpPort": 80,
-                                  "httpsPort": 443,
-                                  "priority": 1,
-                                  "weight": 50,
-                                  "backendHostHeader": "[concat(parameters('frontdoors_customer_demo_name'), '.azurewebsites.net')]",
-                                  "enabledState": "Enabled"
-                              }
-                          ],
-                          "healthProbeSettings": {
-                              "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/healthProbeSettings/healthProbeSettings-', parameters('frontdoors_customer_demo_name')))]"
-                          },
-                          "loadBalancingSettings": {
-                              "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/loadBalancingSettings/loadBalancingSettings-', parameters('frontdoors_customer_demo_name')))]"
-                          },
-                          "resourceState": "Enabled"
-                      }
-                  }
-              ],
-              "healthProbeSettings": [
-                  {
-                      "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/HealthProbeSettings/healthProbeSettings-', parameters('frontdoors_customer_demo_name')))]",
-                      "name": "[concat('healthProbeSettings-', parameters('frontdoors_customer_demo_name'))]",
-                      "properties": {
-                          "intervalInSeconds": 30,
-                          "path": "/",
-                          "protocol": "Https",
-                          "resourceState": "Enabled",
-                          "enabledState": "Enabled",
-                          "healthProbeMethod": "Get"
-                      }
-                  }
-              ],
-              "frontendEndpoints": [
-                  {
-                      "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/FrontendEndpoints/', parameters('frontdoors_customer_demo_name'), '-azurefd-net'))]",
-                      "name": "[concat(parameters('frontdoors_customer_demo_name'), '-azurefd-net')]",
-                      "properties": {
-                          "hostName": "[concat(parameters('frontdoors_customer_demo_name'), '.azurefd.net')]",
-                          "sessionAffinityEnabledState": "Disabled",
-                          "sessionAffinityTtlSeconds": 0,
-                          "webApplicationFirewallPolicyLink": {
-                              "id": "[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', parameters('frontdoorwebapplicationfirewallpolicies_customerdemod3cc1b8258534f82b45ba23351bfa6a0_name'))]"
-                          },
-                          "resourceState": "Enabled"
-                      }
-                  }
-              ],
-              "loadBalancingSettings": [
-                  {
-                      "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/LoadBalancingSettings/loadBalancingSettings-', parameters('frontdoors_customer_demo_name')))]",
-                      "name": "[concat('loadBalancingSettings-', parameters('frontdoors_customer_demo_name'))]",
-                      "properties": {
-                          "additionalLatencyMilliseconds": 0,
-                          "sampleSize": 4,
-                          "successfulSamplesRequired": 2,
-                          "resourceState": "Enabled"
-                      }
-                  }
-              ],
-              "routingRules": [
-                  {
-                      "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), '/RoutingRules/httpToHttpsRedirect')]",
-                      "name": "httpToHttpsRedirect",
-                      "properties": {
-                          "frontendEndpoints": [
-                              {
-                                  "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/FrontendEndpoints/', parameters('frontdoors_customer_demo_name'), '-azurefd-net'))]"
-                              }
-                          ],
-                          "acceptedProtocols": [
-                              "Http"
-                          ],
-                          "patternsToMatch": [
-                              "/*"
-                          ],
-                          "enabledState": "Enabled",
-                          "resourceState": "Enabled",
-                          "routeConfiguration": {
-                              "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorRedirectConfiguration",
-                              "redirectProtocol": "HttpsOnly",
-                              "redirectType": "Found"
-                          }
-                      }
-                  },
-                  {
-                      "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), '/RoutingRules/defaultForwardingRoute')]",
-                      "name": "defaultForwardingRoute",
-                      "properties": {
-                          "frontendEndpoints": [
-                              {
-                                  "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/FrontendEndpoints/', parameters('frontdoors_customer_demo_name'), '-azurefd-net'))]"
-                              }
-                          ],
-                          "acceptedProtocols": [
-                              "Https"
-                          ],
-                          "patternsToMatch": [
-                              "/*"
-                          ],
-                          "enabledState": "Enabled",
-                          "resourceState": "Enabled",
-                          "routeConfiguration": {
-                              "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
-                              "forwardingProtocol": "HttpsOnly",
-                              "backendPool": {
-                                  "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), '/BackendPools/defaultPool')]"
-                              }
-                          }
-                      }
-                  }
-              ],
-              "backendPoolsSettings": {
-                  "enforceCertificateNameCheck": "Enabled",
-                  "sendRecvTimeoutSeconds": 30
-              },
-              "enabledState": "Enabled",
-              "friendlyName": "[parameters('frontdoors_customer_demo_name')]"
-          }
-      },
-      {
-          "type": "Microsoft.Network/frontdoors/rulesengines",
-          "apiVersion": "2020-05-01",
-          "name": "[concat(parameters('frontdoors_customer_demo_name'), '/GeoIPFilter')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name'))]"
-          ],
-          "properties": {
-              "resourceState": "Enabled",
-              "rules": [
-                  {
-                      "priority": 0,
-                      "name": "BlockCountries",
-                      "matchProcessingBehavior": "Continue",
-                      "action": {
-                          "requestHeaderActions": [],
-                          "responseHeaderActions": [
-                              {
-                                  "headerActionType": "Overwrite",
-                                  "headerName": "code",
-                                  "value": "403"
-                              }
-                          ]
-                      },
-                      "matchConditions": [
-                          {
-                              "rulesEngineMatchValue": [
-                                  "DE"
-                              ],
-                              "rulesEngineMatchVariable": "RemoteAddr",
-                              "rulesEngineOperator": "GeoMatch",
-                              "transforms": [],
-                              "negateCondition": false
-                          }
-                      ]
-                  }
-              ]
-          }
-      },
-      {
-          "type": "Microsoft.Network/virtualNetworks/subnets",
-          "apiVersion": "2020-05-01",
-          "name": "[concat(parameters('virtualNetworks_customer_demo_vnet_name'), '/default')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_customer_demo_vnet_name'))]"
-          ],
-          "properties": {
-              "addressPrefix": "172.16.0.0/24",
-              "delegations": [],
-              "privateEndpointNetworkPolicies": "Enabled",
-              "privateLinkServiceNetworkPolicies": "Enabled"
-          }
-      },
-      {
-          "type": "Microsoft.Network/virtualNetworks/subnets",
-          "apiVersion": "2020-05-01",
-          "name": "[concat(parameters('virtualNetworks_customer_demo_vnet_name'), '/gateway')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_customer_demo_vnet_name'))]"
-          ],
-          "properties": {
-              "addressPrefix": "172.16.1.0/24",
-              "delegations": [],
-              "privateEndpointNetworkPolicies": "Enabled",
-              "privateLinkServiceNetworkPolicies": "Enabled"
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/blobServices",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
-          ],
-          "sku": {
-              "name": "Standard_LRS",
-              "tier": "Standard"
-          },
-          "properties": {
-              "cors": {
-                  "corsRules": []
-              },
-              "deleteRetentionPolicy": {
-                  "enabled": false
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/blobServices",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
-          ],
-          "sku": {
-              "name": "Standard_LRS",
-              "tier": "Standard"
-          },
-          "properties": {
-              "cors": {
-                  "corsRules": []
-              },
-              "deleteRetentionPolicy": {
-                  "enabled": false
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/fileServices",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
-          ],
-          "sku": {
-              "name": "Standard_LRS",
-              "tier": "Standard"
-          },
-          "properties": {
-              "cors": {
-                  "corsRules": []
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/fileServices",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
-          ],
-          "sku": {
-              "name": "Standard_LRS",
-              "tier": "Standard"
-          },
-          "properties": {
-              "cors": {
-                  "corsRules": []
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/queueServices",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
-          ],
-          "properties": {
-              "cors": {
-                  "corsRules": []
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/queueServices",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
-          ],
-          "properties": {
-              "cors": {
-                  "corsRules": []
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/tableServices",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
-          ],
-          "properties": {
-              "cors": {
-                  "corsRules": []
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/tableServices",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
-          ],
-          "properties": {
-              "cors": {
-                  "corsRules": []
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites",
-          "apiVersion": "2018-11-01",
-          "name": "[parameters('sites_customer_demo_client_eastus_name')]",
-          "location": "East US",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_customerdemo_aa82_name'))]"
-          ],
-          "kind": "functionapp",
-          "properties": {
-              "enabled": true,
-              "hostNameSslStates": [
-                  {
-                      "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '.azurewebsites.net')]",
-                      "sslState": "Disabled",
-                      "hostType": "Standard"
-                  },
-                  {
-                      "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '.scm.azurewebsites.net')]",
-                      "sslState": "Disabled",
-                      "hostType": "Repository"
-                  }
-              ],
-              "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_customerdemo_aa82_name'))]",
-              "reserved": false,
-              "isXenon": false,
-              "hyperV": false,
-              "siteConfig": {},
-              "scmSiteAlsoStopped": false,
-              "clientAffinityEnabled": true,
-              "clientCertEnabled": false,
-              "hostNamesDisabled": false,
-              "containerSize": 1536,
-              "dailyMemoryTimeQuota": 0,
-              "httpsOnly": false,
-              "redundancyMode": "None"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites",
-          "apiVersion": "2018-11-01",
-          "name": "[parameters('sites_customer_demo_germany_name')]",
-          "location": "Germany West Central",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_customerdemo_84e5_name'))]"
-          ],
-          "kind": "functionapp",
-          "properties": {
-              "enabled": true,
-              "hostNameSslStates": [
-                  {
-                      "name": "[concat(parameters('sites_customer_demo_germany_name'), '.azurewebsites.net')]",
-                      "sslState": "Disabled",
-                      "hostType": "Standard"
-                  },
-                  {
-                      "name": "[concat(parameters('sites_customer_demo_germany_name'), '.scm.azurewebsites.net')]",
-                      "sslState": "Disabled",
-                      "hostType": "Repository"
-                  }
-              ],
-              "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_customerdemo_84e5_name'))]",
-              "reserved": false,
-              "isXenon": false,
-              "hyperV": false,
-              "siteConfig": {},
-              "scmSiteAlsoStopped": false,
-              "clientAffinityEnabled": true,
-              "clientCertEnabled": false,
-              "hostNamesDisabled": false,
-              "containerSize": 1536,
-              "dailyMemoryTimeQuota": 0,
-              "httpsOnly": false,
-              "redundancyMode": "None"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/config",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_name'), '/web')]",
-          "location": "East US",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_name'))]"
-          ],
-          "properties": {
-              "numberOfWorkers": 1,
-              "defaultDocuments": [
-                  "Default.htm",
-                  "Default.html",
-                  "Default.asp",
-                  "index.htm",
-                  "index.html",
-                  "iisstart.htm",
-                  "default.aspx",
-                  "index.php",
-                  "hostingstart.html"
-              ],
-              "netFrameworkVersion": "v4.0",
-              "requestTracingEnabled": false,
-              "remoteDebuggingEnabled": false,
-              "httpLoggingEnabled": false,
-              "logsDirectorySizeLimit": 35,
-              "detailedErrorLoggingEnabled": false,
-              "publishingUsername": "$customer-demo",
-              "azureStorageAccounts": {},
-              "scmType": "None",
-              "use32BitWorkerProcess": true,
-              "webSocketsEnabled": false,
-              "alwaysOn": true,
-              "managedPipelineMode": "Integrated",
-              "virtualApplications": [
-                  {
-                      "virtualPath": "/",
-                      "physicalPath": "site\\wwwroot",
-                      "preloadEnabled": true
-                  }
-              ],
-              "loadBalancing": "LeastRequests",
-              "experiments": {
-                  "rampUpRules": []
-              },
-              "autoHealEnabled": false,
-              "localMySqlEnabled": false,
-              "ipSecurityRestrictions": [
-                  {
-                      "ipAddress": "Any",
-                      "action": "Allow",
-                      "priority": 1,
-                      "name": "Allow all",
-                      "description": "Allow all access"
-                  }
-              ],
-              "scmIpSecurityRestrictions": [
-                  {
-                      "ipAddress": "Any",
-                      "action": "Allow",
-                      "priority": 1,
-                      "name": "Allow all",
-                      "description": "Allow all access"
-                  }
-              ],
-              "scmIpSecurityRestrictionsUseMain": false,
-              "http20Enabled": false,
-              "minTlsVersion": "1.2",
-              "ftpsState": "AllAllowed",
-              "reservedInstanceCount": 0
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/config",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/web')]",
-          "location": "East US",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
-          ],
-          "properties": {
-              "numberOfWorkers": -1,
-              "defaultDocuments": [
-                  "Default.htm",
-                  "Default.html",
-                  "Default.asp",
-                  "index.htm",
-                  "index.html",
-                  "iisstart.htm",
-                  "default.aspx",
-                  "index.php"
-              ],
-              "netFrameworkVersion": "v4.0",
-              "phpVersion": "5.6",
-              "requestTracingEnabled": false,
-              "remoteDebuggingEnabled": false,
-              "httpLoggingEnabled": false,
-              "logsDirectorySizeLimit": 35,
-              "detailedErrorLoggingEnabled": false,
-              "publishingUsername": "$customer-demo-client-eastus",
-              "azureStorageAccounts": {},
-              "scmType": "None",
-              "use32BitWorkerProcess": true,
-              "webSocketsEnabled": false,
-              "alwaysOn": false,
-              "managedPipelineMode": "Integrated",
-              "virtualApplications": [
-                  {
-                      "virtualPath": "/",
-                      "physicalPath": "site\\wwwroot",
-                      "preloadEnabled": false
-                  }
-              ],
-              "loadBalancing": "LeastRequests",
-              "experiments": {
-                  "rampUpRules": []
-              },
-              "autoHealEnabled": false,
-              "cors": {
-                  "allowedOrigins": [
-                      "https://functions.azure.com",
-                      "https://functions-staging.azure.com",
-                      "https://functions-next.azure.com"
-                  ],
-                  "supportCredentials": false
-              },
-              "localMySqlEnabled": false,
-              "ipSecurityRestrictions": [
-                  {
-                      "ipAddress": "Any",
-                      "action": "Allow",
-                      "priority": 1,
-                      "name": "Allow all",
-                      "description": "Allow all access"
-                  }
-              ],
-              "scmIpSecurityRestrictions": [
-                  {
-                      "ipAddress": "Any",
-                      "action": "Allow",
-                      "priority": 1,
-                      "name": "Allow all",
-                      "description": "Allow all access"
-                  }
-              ],
-              "scmIpSecurityRestrictionsUseMain": false,
-              "http20Enabled": false,
-              "minTlsVersion": "1.2",
-              "ftpsState": "AllAllowed",
-              "reservedInstanceCount": 0
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/config",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_germany_name'), '/web')]",
-          "location": "Germany West Central",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
-          ],
-          "properties": {
-              "numberOfWorkers": -1,
-              "defaultDocuments": [
-                  "Default.htm",
-                  "Default.html",
-                  "Default.asp",
-                  "index.htm",
-                  "index.html",
-                  "iisstart.htm",
-                  "default.aspx",
-                  "index.php"
-              ],
-              "netFrameworkVersion": "v4.0",
-              "phpVersion": "5.6",
-              "requestTracingEnabled": false,
-              "remoteDebuggingEnabled": false,
-              "httpLoggingEnabled": false,
-              "logsDirectorySizeLimit": 35,
-              "detailedErrorLoggingEnabled": false,
-              "publishingUsername": "$customer-demo-germany",
-              "azureStorageAccounts": {},
-              "scmType": "None",
-              "use32BitWorkerProcess": true,
-              "webSocketsEnabled": false,
-              "alwaysOn": false,
-              "managedPipelineMode": "Integrated",
-              "virtualApplications": [
-                  {
-                      "virtualPath": "/",
-                      "physicalPath": "site\\wwwroot",
-                      "preloadEnabled": false
-                  }
-              ],
-              "loadBalancing": "LeastRequests",
-              "experiments": {
-                  "rampUpRules": []
-              },
-              "autoHealEnabled": false,
-              "cors": {
-                  "allowedOrigins": [
-                      "https://functions.azure.com",
-                      "https://functions-staging.azure.com",
-                      "https://functions-next.azure.com"
-                  ],
-                  "supportCredentials": false
-              },
-              "localMySqlEnabled": false,
-              "ipSecurityRestrictions": [
-                  {
-                      "ipAddress": "Any",
-                      "action": "Allow",
-                      "priority": 1,
-                      "name": "Allow all",
-                      "description": "Allow all access"
-                  }
-              ],
-              "scmIpSecurityRestrictions": [
-                  {
-                      "ipAddress": "Any",
-                      "action": "Allow",
-                      "priority": 1,
-                      "name": "Allow all",
-                      "description": "Allow all access"
-                  }
-              ],
-              "scmIpSecurityRestrictionsUseMain": false,
-              "http20Enabled": false,
-              "minTlsVersion": "1.2",
-              "ftpsState": "AllAllowed",
-              "reservedInstanceCount": 0
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/functions",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/testCDN')]",
-          "location": "East US",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
-          ],
-          "properties": {
-              "script_root_path_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/",
-              "script_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/run.ps1",
-              "config_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/function.json",
-              "href": "https://customer-demo-client-eastus.azurewebsites.net/admin/functions/HttpTrigger1",
-              "config": {},
-              "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/functions",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_germany_name'), '/testCDN')]",
-          "location": "Germany West Central",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
-          ],
-          "properties": {
-              "script_root_path_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/",
-              "script_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/run.ps1",
-              "config_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/function.json",
-              "href": "https://customer-demo-germany.azurewebsites.net/admin/functions/HttpTrigger1",
-              "config": {},
-              "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/functions",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/testAppGateway')]",
-          "location": "East US",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
-          ],
-          "properties": {
-              "script_root_path_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/",
-              "script_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/run.ps1",
-              "config_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/function.json",
-              "href": "https://customer-demo-client-eastus.azurewebsites.net/admin/functions/testAppGateway",
-              "config": {},
-              "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/functions",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_germany_name'), '/testAppGateway')]",
-          "location": "Germany West Central",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
-          ],
-          "properties": {
-              "script_root_path_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/",
-              "script_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/run.ps1",
-              "config_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/function.json",
-              "href": "https://customer-demo-germany.azurewebsites.net/admin/functions/testAppGateway",
-              "config": {},
-              "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/functions",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/testFrontDoor')]",
-          "location": "East US",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
-          ],
-          "properties": {
-              "script_root_path_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/",
-              "script_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/run.ps1",
-              "config_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/function.json",
-              "href": "https://customer-demo-client-eastus.azurewebsites.net/admin/functions/testFrontDoor",
-              "config": {},
-              "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/functions",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_germany_name'), '/testFrontDoor')]",
-          "location": "Germany West Central",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
-          ],
-          "properties": {
-              "script_root_path_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/",
-              "script_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/run.ps1",
-              "config_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/function.json",
-              "href": "https://customer-demo-germany.azurewebsites.net/admin/functions/testFrontDoor",
-              "config": {},
-              "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/hostNameBindings",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_name'), '/', parameters('sites_customer_demo_name'), '.azurewebsites.net')]",
-          "location": "East US",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_name'))]"
-          ],
-          "properties": {
-              "siteName": "customer-demo",
-              "hostNameType": "Verified"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/hostNameBindings",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/', parameters('sites_customer_demo_client_eastus_name'), '.azurewebsites.net')]",
-          "location": "East US",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
-          ],
-          "properties": {
-              "siteName": "customer-demo-client-eastus",
-              "hostNameType": "Verified"
-          }
-      },
-      {
-          "type": "Microsoft.Web/sites/hostNameBindings",
-          "apiVersion": "2018-11-01",
-          "name": "[concat(parameters('sites_customer_demo_germany_name'), '/', parameters('sites_customer_demo_germany_name'), '.azurewebsites.net')]",
-          "location": "Germany West Central",
-          "dependsOn": [
-              "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
-          ],
-          "properties": {
-              "siteName": "customer-demo-germany",
-              "hostNameType": "Verified"
-          }
-      },
-      {
-          "type": "microsoft.alertsmanagement/smartdetectoralertrules",
-          "apiVersion": "2019-06-01",
-          "name": "[parameters('smartdetectoralertrules_failure_anomalies___customer_demo_name')]",
-          "location": "global",
-          "dependsOn": [
-              "[resourceId('microsoft.insights/components', parameters('components_customer_demo_name'))]",
-              "[resourceId('microsoft.insights/actionGroups', parameters('actionGroups_Application_Insights_Smart_Detection_name'))]"
-          ],
-          "properties": {
-              "description": "Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.",
-              "state": "Enabled",
-              "severity": "Sev3",
-              "frequency": "PT1M",
-              "detector": {
-                  "id": "FailureAnomaliesDetector",
-                  "name": "Failure Anomalies",
-                  "description": "Detects if your application experiences an abnormal rise in the rate of HTTP requests or dependency calls that are reported as failed. The anomaly detection uses machine learning algorithms and occurs in near real time, tcustomerfore tcustomer's no need to define a frequency for this signal.<br/></br/>To help you triage and diagnose the problem, an analysis of the characteristics of the failures and related telemetry is provided with the detection. This feature works for any app, hosted in the cloud or on your own servers, that generates request or dependency telemetry - for example, if you have a worker role that calls <a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics#trackrequest\\\" target=\\\"_blank\\\">TrackRequest()</a> or <a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics#trackdependency\\\" target=\\\"_blank\\\">TrackDependency()</a>.<br/><br/><a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/azure-monitor/app/proactive-failure-diagnostics\\\" target=\\\"_blank\\\">Learn more about Failure Anomalies</a>",
-                  "supportedResourceTypes": [
-                      "ApplicationInsights"
-                  ]
-              },
-              "scope": [
-                  "[resourceId('microsoft.insights/components', parameters('components_customer_demo_name'))]"
-              ],
-              "actionGroups": {
-                  "groupIds": [
-                      "[resourceId('microsoft.insights/actionGroups', parameters('actionGroups_Application_Insights_Smart_Detection_name'))]"
-                  ]
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default/azure-webjobs-hosts')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storageaccountcustomerd8dad_name'), 'default')]",
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
-          ],
-          "properties": {
-              "defaultEncryptionScope": "$account-encryption-key",
-              "denyEncryptionScopeOverride": false,
-              "publicAccess": "None"
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default/azure-webjobs-hosts')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storageaccountcustomerda280_name'), 'default')]",
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
-          ],
-          "properties": {
-              "defaultEncryptionScope": "$account-encryption-key",
-              "denyEncryptionScopeOverride": false,
-              "publicAccess": "None"
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default/azure-webjobs-secrets')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storageaccountcustomerd8dad_name'), 'default')]",
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
-          ],
-          "properties": {
-              "defaultEncryptionScope": "$account-encryption-key",
-              "denyEncryptionScopeOverride": false,
-              "publicAccess": "None"
-          }
-      },
-      {
-          "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-          "apiVersion": "2019-06-01",
-          "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default/azure-webjobs-secrets')]",
-          "dependsOn": [
-              "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storageaccountcustomerda280_name'), 'default')]",
-              "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
-          ],
-          "properties": {
-              "defaultEncryptionScope": "$account-encryption-key",
-              "denyEncryptionScopeOverride": false,
-              "publicAccess": "None"
-          }
-      },
-      {
-          "type": "Microsoft.Network/applicationGateways",
-          "apiVersion": "2020-05-01",
-          "name": "[parameters('applicationGateways_customer_demo_ag_name')]",
-          "location": "eastus",
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_customer_demo_vnet_name'), 'gateway')]",
-              "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_customer_demo_pip_name'))]",
-              "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', parameters('ApplicationGatewayWebApplicationFirewallPolicies_wafpolicyNew_name'))]"
-          ],
-          "properties": {
-              "sku": {
-                  "name": "WAF_v2",
-                  "tier": "WAF_v2",
-                  "capacity": 1
-              },
-              "gatewayIPConfigurations": [
-                  {
-                      "name": "appGatewayIpConfig",
-                      "properties": {
-                          "subnet": {
-                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_customer_demo_vnet_name'), 'gateway')]"
-                          }
-                      }
-                  }
-              ],
-              "sslCertificates": [],
-              "trustedRootCertificates": [],
-              "frontendIPConfigurations": [
-                  {
-                      "name": "appGwPublicFrontendIp",
-                      "properties": {
-                          "privateIPAllocationMethod": "Dynamic",
-                          "publicIPAddress": {
-                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_customer_demo_pip_name'))]"
-                          }
-                      }
-                  }
-              ],
-              "frontendPorts": [
-                  {
-                      "name": "port_80",
-                      "properties": {
-                          "port": 80
-                      }
-                  }
-              ],
-              "backendAddressPools": [
-                  {
-                      "name": "customer-demo-webapp",
-                      "properties": {
-                          "backendAddresses": [
-                              {
-                                  "fqdn": "customer-demo-webapp.azurewebsites.net"
-                              }
-                          ]
-                      }
-                  }
-              ],
-              "backendHttpSettingsCollection": [
-                  {
-                      "name": "customer-demo-webapp",
-                      "properties": {
-                          "port": 80,
-                          "protocol": "Http",
-                          "cookieBasedAffinity": "Disabled",
-                          "pickHostNameFromBackendAddress": true,
-                          "requestTimeout": 20,
-                          "probe": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/probes/customer-demo-webappfa696144-fd47-4ab8-9f0c-e01ae733c03a')]"
-                          }
-                      }
-                  }
-              ],
-              "httpListeners": [
-                  {
-                      "name": "customer-demo-webapp",
-                      "properties": {
-                          "frontendIPConfiguration": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
-                          },
-                          "frontendPort": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/frontendPorts/port_80')]"
-                          },
-                          "protocol": "Http",
-                          "hostNames": [],
-                          "requireServerNameIndication": false
-                      }
-                  }
-              ],
-              "urlPathMaps": [],
-              "requestRoutingRules": [
-                  {
-                      "name": "customer-demo-webapp",
-                      "properties": {
-                          "ruleType": "Basic",
-                          "httpListener": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/httpListeners/customer-demo-webapp')]"
-                          },
-                          "backendAddressPool": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/backendAddressPools/customer-demo-webapp')]"
-                          },
-                          "backendHttpSettings": {
-                              "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/backendHttpSettingsCollection/customer-demo-webapp')]"
-                          }
-                      }
-                  }
-              ],
-              "probes": [
-                  {
-                      "name": "customer-demo-webappfa696144-fd47-4ab8-9f0c-e01ae733c03a",
-                      "properties": {
-                          "protocol": "Http",
-                          "path": "/",
-                          "interval": 30,
-                          "timeout": 30,
-                          "unhealthyThreshold": 3,
-                          "pickHostNameFromBackendHttpSettings": true,
-                          "minServers": 0,
-                          "match": {}
-                      }
-                  }
-              ],
-              "rewriteRuleSets": [],
-              "redirectConfigurations": [],
-              "privateLinkConfigurations": [],
-              "webApplicationFirewallConfiguration": {
-                  "enabled": true,
-                  "firewallMode": "Prevention",
-                  "ruleSetType": "OWASP",
-                  "ruleSetVersion": "3.0",
-                  "disabledRuleGroups": [],
-                  "requestBodyCheck": true,
-                  "maxRequestBodySizeInKb": 128,
-                  "fileUploadLimitInMb": 100
-              },
-              "enableHttp2": true,
-              "forceFirewallPolicyAssociation": true,
-              "firewallPolicy": {
-                  "id": "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', parameters('ApplicationGatewayWebApplicationFirewallPolicies_wafpolicyNew_name'))]"
-              }
-          }
-      }
-  ]
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "app_service_plan_name":{
+            "defaultValue": "customer-demo-asp",
+            "type": "String"
+        },
+        "sites_customer_demo_name": {
+            "defaultValue": "customer-demo-webapp",
+            "type": "String"
+        },
+        "profiles_customer_demo_name": {
+            "defaultValue": "customer-demo-cdn",
+            "type": "String"
+        },
+        "sites_customer_demo_germany_name": {
+            "defaultValue": "customer-demo-client-germany",
+            "type": "String"
+        },
+        "frontdoors_customer_demo_name": {
+            "defaultValue": "customer-demo-webapp",
+            "type": "String"
+        },
+        "components_customer_demo_name": {
+            "defaultValue": "customer-demo-components",
+            "type": "String"
+        },
+        "serverfarms_ASP_customerdemo_84e5_name": {
+            "defaultValue": "ASP-customerdemo-84e5",
+            "type": "String"
+        },
+        "serverfarms_ASP_customerdemo_aa82_name": {
+            "defaultValue": "ASP-customerdemo-aa82",
+            "type": "String"
+        },
+        "sites_customer_demo_client_eastus_name": {
+            "defaultValue": "customer-demo-client-eastus",
+            "type": "String"
+        },
+        "virtualNetworks_customer_demo_vnet_name": {
+            "defaultValue": "customer-demo-vnet",
+            "type": "String"
+        },
+        "publicIPAddresses_customer_demo_pip_name": {
+            "defaultValue": "customer-demo-pip",
+            "type": "String"
+        },
+        "applicationGateways_customer_demo_ag_name": {
+            "defaultValue": "customer-demo-ag",
+            "type": "String"
+        },
+        "storageAccounts_storageaccountcustomerd8dad_name": {
+            "defaultValue": "sa98017634",
+            "type": "String"
+        },
+        "storageAccounts_storageaccountcustomerda280_name": {
+            "defaultValue": "sa98017634alt",
+            "type": "String"
+        },
+        "actionGroups_Application_Insights_Smart_Detection_name": {
+            "defaultValue": "Application Insights Smart Detection",
+            "type": "String"
+        },
+        "ApplicationGatewayWebApplicationFirewallPolicies_wafpolicyNew_name": {
+            "defaultValue": "wafpolicyNew",
+            "type": "String"
+        },
+        "smartdetectoralertrules_failure_anomalies___customer_demo_name": {
+            "defaultValue": "failure anomalies - customer-demo",
+            "type": "String"
+        },
+        "frontdoorwebapplicationfirewallpolicies_customerdemod3cc1b8258534f82b45ba23351bfa6a0_name": {
+            "defaultValue": "customerdemod3cc1b8258534f82b45ba23351bfa6a0",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Cdn/profiles",
+            "apiVersion": "2020-04-15",
+            "name": "[parameters('profiles_customer_demo_name')]",
+            "location": "EastUs",
+            "sku": {
+                "name": "Standard_Microsoft"
+            },
+            "properties": {}
+        },
+        {
+            "type": "microsoft.insights/actionGroups",
+            "apiVersion": "2019-03-01",
+            "name": "[parameters('actionGroups_Application_Insights_Smart_Detection_name')]",
+            "location": "Global",
+            "properties": {
+                "groupShortName": "SmartDetect",
+                "enabled": true,
+                "emailReceivers": [],
+                "smsReceivers": [],
+                "webhookReceivers": [],
+                "itsmReceivers": [],
+                "azureAppPushReceivers": [],
+                "automationRunbookReceivers": [],
+                "voiceReceivers": [],
+                "logicAppReceivers": [],
+                "azureFunctionReceivers": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[parameters('components_customer_demo_name')]",
+            "location": "eastus",
+            "kind": "web",
+            "properties": {
+                "Application_Type": "web",
+                "Request_Source": "IbizaWebAppExtensionCreate",
+                "RetentionInDays": 90,
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('ApplicationGatewayWebApplicationFirewallPolicies_wafpolicyNew_name')]",
+            "location": "eastus",
+            "properties": {
+                "customRules": [
+                    {
+                        "name": "denyGermany",
+                        "priority": 10,
+                        "ruleType": "MatchRule",
+                        "action": "Block",
+                        "matchConditions": [
+                            {
+                                "matchVariables": [
+                                    {
+                                        "variableName": "RemoteAddr"
+                                    }
+                                ],
+                                "operator": "GeoMatch",
+                                "negationConditon": false,
+                                "matchValues": [
+                                    "DE"
+                                ],
+                                "transforms": [
+                                    "Lowercase"
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "policySettings": {
+                    "requestBodyCheck": true,
+                    "maxRequestBodySizeInKb": 128,
+                    "fileUploadLimitInMb": 100,
+                    "state": "Enabled",
+                    "mode": "Prevention"
+                },
+                "managedRules": {
+                    "managedRuleSets": [
+                        {
+                            "ruleSetType": "OWASP",
+                            "ruleSetVersion": "3.0",
+                            "ruleGroupOverrides": []
+                        }
+                    ],
+                    "exclusions": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/frontdoorwebapplicationfirewallpolicies",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('frontdoorwebapplicationfirewallpolicies_customerdemod3cc1b8258534f82b45ba23351bfa6a0_name')]",
+            "location": "Global",
+            "properties": {
+                "policySettings": {
+                    "enabledState": "Enabled",
+                    "mode": "Prevention",
+                    "customBlockResponseStatusCode": 403
+                },
+                "customRules": {
+                    "rules": [
+                        {
+                            "name": "GeoFilter",
+                            "enabledState": "Enabled",
+                            "priority": 100,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RemoteAddr",
+                                    "operator": "GeoMatch",
+                                    "negateCondition": false,
+                                    "matchValue": [
+                                        "DE"
+                                    ],
+                                    "transforms": []
+                                }
+                            ],
+                            "action": "Block"
+                        }
+                    ]
+                },
+                "managedRules": {
+                    "managedRuleSets": [
+                        {
+                            "ruleSetType": "DefaultRuleSet",
+                            "ruleSetVersion": "1.0",
+                            "ruleGroupOverrides": [],
+                            "exclusions": []
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('publicIPAddresses_customer_demo_pip_name')]",
+            "location": "eastus",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "ipAddress": "52.188.137.202",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "customer-demo",
+                    "fqdn": "customer-demo.eastus.cloudapp.azure.com"
+                },
+                "ipTags": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('virtualNetworks_customer_demo_vnet_name')]",
+            "location": "eastus",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "172.16.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "default",
+                        "properties": {
+                            "addressPrefix": "172.16.0.0/24",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    },
+                    {
+                        "name": "gateway",
+                        "properties": {
+                            "addressPrefix": "172.16.1.0/24",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "name": "[parameters('storageAccounts_storageaccountcustomerd8dad_name')]",
+            "location": "germanywestcentral",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "name": "[parameters('storageAccounts_storageaccountcustomerda280_name')]",
+            "location": "eastus",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[parameters('serverfarms_ASP_customerdemo_84e5_name')]",
+            "location": "Germany West Central",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "kind": "functionapp",
+            "properties": {
+                "perSiteScaling": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[parameters('serverfarms_ASP_customerdemo_aa82_name')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "kind": "functionapp",
+            "properties": {
+                "perSiteScaling": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0
+            }
+        },
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('app_service_plan_name')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[resourceGroup().location]",
+            "kind": "",
+            "tags": {},
+            "dependsOn": [],
+            "properties": {
+                "name": "[parameters('app_service_plan_name')]",
+                "workerSize": "0",
+                "workerSizeId": "0",
+                "numberOfWorkers": "1"
+            },
+            "sku": {
+                "Tier": "Standard",
+                "Name": "S1"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('sites_customer_demo_name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]"
+            ],
+            "kind": "app",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_customer_demo_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_customer_demo_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "siteConfig": {},
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": true,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Cdn/profiles/endpoints",
+            "apiVersion": "2020-04-15",
+            "name": "[concat(parameters('profiles_customer_demo_name'), '/', parameters('profiles_customer_demo_name'))]",
+            "location": "EastUs",
+            "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_customer_demo_name'))]"
+            ],
+            "properties": {
+                "originHostHeader": "customer-demo-webapp.azurewebsites.net",
+                "isHttpAllowed": true,
+                "isHttpsAllowed": true,
+                "queryStringCachingBehavior": "IgnoreQueryString",
+                "origins": [
+                    {
+                        "name": "customer-demo-webapp-azurewebsites-net",
+                        "properties": {
+                            "hostName": "customer-demo-webapp.azurewebsites.net",
+                            "httpPort": 80,
+                            "httpsPort": 443,
+                            "originHostHeader": "customer-demo-webapp.azurewebsites.net",
+                            "priority": 1,
+                            "weight": 1000,
+                            "enabled": true
+                        }
+                    }
+                ],
+                "originGroups": [],
+                "contentTypesToCompress": [
+                    "application/eot",
+                    "application/font",
+                    "application/font-sfnt",
+                    "application/javascript",
+                    "application/json",
+                    "application/opentype",
+                    "application/otf",
+                    "application/pkcs7-mime",
+                    "application/truetype",
+                    "application/ttf",
+                    "application/vnd.ms-fontobject",
+                    "application/xhtml+xml",
+                    "application/xml",
+                    "application/xml+rss",
+                    "application/x-font-opentype",
+                    "application/x-font-truetype",
+                    "application/x-font-ttf",
+                    "application/x-httpd-cgi",
+                    "application/x-javascript",
+                    "application/x-mpegurl",
+                    "application/x-opentype",
+                    "application/x-otf",
+                    "application/x-perl",
+                    "application/x-ttf",
+                    "font/eot",
+                    "font/ttf",
+                    "font/otf",
+                    "font/opentype",
+                    "image/svg+xml",
+                    "text/css",
+                    "text/csv",
+                    "text/html",
+                    "text/javascript",
+                    "text/js",
+                    "text/plain",
+                    "text/richtext",
+                    "text/tab-separated-values",
+                    "text/xml",
+                    "text/x-script",
+                    "text/x-component",
+                    "text/x-java-source"
+                ],
+                "isCompressionEnabled": true,
+                "geoFilters": [
+                    {
+                        "relativePath": "/",
+                        "action": "Block",
+                        "countryCodes": [
+                            "DE"
+                        ]
+                    }
+                ],
+                "urlSigningKeys": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/frontdoors",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('frontdoors_customer_demo_name')]",
+            "location": "Global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', parameters('frontdoorwebapplicationfirewallpolicies_customerdemod3cc1b8258534f82b45ba23351bfa6a0_name'))]"
+            ],
+            "properties": {
+                "resourceState": "Enabled",
+                "backendPools": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), '/BackendPools/defaultPool')]",
+                        "name": "defaultPool",
+                        "properties": {
+                            "backends": [
+                                {
+                                    "address": "[concat(parameters('frontdoors_customer_demo_name'), '.azurewebsites.net')]",
+                                    "httpPort": 80,
+                                    "httpsPort": 443,
+                                    "priority": 1,
+                                    "weight": 50,
+                                    "backendHostHeader": "[concat(parameters('frontdoors_customer_demo_name'), '.azurewebsites.net')]",
+                                    "enabledState": "Enabled"
+                                }
+                            ],
+                            "healthProbeSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/healthProbeSettings/healthProbeSettings-', parameters('frontdoors_customer_demo_name')))]"
+                            },
+                            "loadBalancingSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/loadBalancingSettings/loadBalancingSettings-', parameters('frontdoors_customer_demo_name')))]"
+                            },
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "healthProbeSettings": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/HealthProbeSettings/healthProbeSettings-', parameters('frontdoors_customer_demo_name')))]",
+                        "name": "[concat('healthProbeSettings-', parameters('frontdoors_customer_demo_name'))]",
+                        "properties": {
+                            "intervalInSeconds": 30,
+                            "path": "/",
+                            "protocol": "Https",
+                            "resourceState": "Enabled",
+                            "enabledState": "Enabled",
+                            "healthProbeMethod": "Get"
+                        }
+                    }
+                ],
+                "frontendEndpoints": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/FrontendEndpoints/', parameters('frontdoors_customer_demo_name'), '-azurefd-net'))]",
+                        "name": "[concat(parameters('frontdoors_customer_demo_name'), '-azurefd-net')]",
+                        "properties": {
+                            "hostName": "[concat(parameters('frontdoors_customer_demo_name'), '.azurefd.net')]",
+                            "sessionAffinityEnabledState": "Disabled",
+                            "sessionAffinityTtlSeconds": 0,
+                            "webApplicationFirewallPolicyLink": {
+                                "id": "[resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', parameters('frontdoorwebapplicationfirewallpolicies_customerdemod3cc1b8258534f82b45ba23351bfa6a0_name'))]"
+                            },
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "loadBalancingSettings": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/LoadBalancingSettings/loadBalancingSettings-', parameters('frontdoors_customer_demo_name')))]",
+                        "name": "[concat('loadBalancingSettings-', parameters('frontdoors_customer_demo_name'))]",
+                        "properties": {
+                            "additionalLatencyMilliseconds": 0,
+                            "sampleSize": 4,
+                            "successfulSamplesRequired": 2,
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "routingRules": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), '/RoutingRules/httpToHttpsRedirect')]",
+                        "name": "httpToHttpsRedirect",
+                        "properties": {
+                            "frontendEndpoints": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/FrontendEndpoints/', parameters('frontdoors_customer_demo_name'), '-azurefd-net'))]"
+                                }
+                            ],
+                            "acceptedProtocols": [
+                                "Http"
+                            ],
+                            "patternsToMatch": [
+                                "/*"
+                            ],
+                            "enabledState": "Enabled",
+                            "resourceState": "Enabled",
+                            "routeConfiguration": {
+                                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorRedirectConfiguration",
+                                "redirectProtocol": "HttpsOnly",
+                                "redirectType": "Found"
+                            }
+                        }
+                    },
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), '/RoutingRules/defaultForwardingRoute')]",
+                        "name": "defaultForwardingRoute",
+                        "properties": {
+                            "frontendEndpoints": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), concat('/FrontendEndpoints/', parameters('frontdoors_customer_demo_name'), '-azurefd-net'))]"
+                                }
+                            ],
+                            "acceptedProtocols": [
+                                "Https"
+                            ],
+                            "patternsToMatch": [
+                                "/*"
+                            ],
+                            "enabledState": "Enabled",
+                            "resourceState": "Enabled",
+                            "routeConfiguration": {
+                                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                                "forwardingProtocol": "HttpsOnly",
+                                "backendPool": {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name')), '/BackendPools/defaultPool')]"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "backendPoolsSettings": {
+                    "enforceCertificateNameCheck": "Enabled",
+                    "sendRecvTimeoutSeconds": 30
+                },
+                "enabledState": "Enabled",
+                "friendlyName": "[parameters('frontdoors_customer_demo_name')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/frontdoors/rulesengines",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('frontdoors_customer_demo_name'), '/GeoIPFilter')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_customer_demo_name'))]"
+            ],
+            "properties": {
+                "resourceState": "Enabled",
+                "rules": [
+                    {
+                        "priority": 0,
+                        "name": "BlockCountries",
+                        "matchProcessingBehavior": "Continue",
+                        "action": {
+                            "requestHeaderActions": [],
+                            "responseHeaderActions": [
+                                {
+                                    "headerActionType": "Overwrite",
+                                    "headerName": "code",
+                                    "value": "403"
+                                }
+                            ]
+                        },
+                        "matchConditions": [
+                            {
+                                "rulesEngineMatchValue": [
+                                    "DE"
+                                ],
+                                "rulesEngineMatchVariable": "RemoteAddr",
+                                "rulesEngineOperator": "GeoMatch",
+                                "transforms": [],
+                                "negateCondition": false
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('virtualNetworks_customer_demo_vnet_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_customer_demo_vnet_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "172.16.0.0/24",
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('virtualNetworks_customer_demo_vnet_name'), '/gateway')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_customer_demo_vnet_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "172.16.1.0/24",
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('sites_customer_demo_client_eastus_name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_customerdemo_aa82_name'))]"
+            ],
+            "kind": "functionapp",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_customerdemo_aa82_name'))]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "siteConfig": {},
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": true,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('sites_customer_demo_germany_name')]",
+            "location": "Germany West Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_customerdemo_84e5_name'))]"
+            ],
+            "kind": "functionapp",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_customer_demo_germany_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_customer_demo_germany_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_customerdemo_84e5_name'))]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "siteConfig": {},
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": true,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_name'), '/web')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$customer-demo",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "reservedInstanceCount": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/web')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": -1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "phpVersion": "5.6",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$customer-demo-client-eastus",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "cors": {
+                    "allowedOrigins": [
+                        "https://functions.azure.com",
+                        "https://functions-staging.azure.com",
+                        "https://functions-next.azure.com"
+                    ],
+                    "supportCredentials": false
+                },
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "reservedInstanceCount": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_germany_name'), '/web')]",
+            "location": "Germany West Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": -1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "phpVersion": "5.6",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$customer-demo-germany",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "cors": {
+                    "allowedOrigins": [
+                        "https://functions.azure.com",
+                        "https://functions-staging.azure.com",
+                        "https://functions-next.azure.com"
+                    ],
+                    "supportCredentials": false
+                },
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "reservedInstanceCount": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/testCDN')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/",
+                "script_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/run.ps1",
+                "config_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/function.json",
+                "href": "https://customer-demo-client-eastus.azurewebsites.net/admin/functions/HttpTrigger1",
+                "config": {},
+                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_germany_name'), '/testCDN')]",
+            "location": "Germany West Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/",
+                "script_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/run.ps1",
+                "config_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/function.json",
+                "href": "https://customer-demo-germany.azurewebsites.net/admin/functions/HttpTrigger1",
+                "config": {},
+                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/testAppGateway')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/",
+                "script_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/run.ps1",
+                "config_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/function.json",
+                "href": "https://customer-demo-client-eastus.azurewebsites.net/admin/functions/testAppGateway",
+                "config": {},
+                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_germany_name'), '/testAppGateway')]",
+            "location": "Germany West Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/",
+                "script_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/run.ps1",
+                "config_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/function.json",
+                "href": "https://customer-demo-germany.azurewebsites.net/admin/functions/testAppGateway",
+                "config": {},
+                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/testFrontDoor')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/",
+                "script_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/run.ps1",
+                "config_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/function.json",
+                "href": "https://customer-demo-client-eastus.azurewebsites.net/admin/functions/testFrontDoor",
+                "config": {},
+                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_germany_name'), '/testFrontDoor')]",
+            "location": "Germany West Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/",
+                "script_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/run.ps1",
+                "config_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/function.json",
+                "href": "https://customer-demo-germany.azurewebsites.net/admin/functions/testFrontDoor",
+                "config": {},
+                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_name'), '/', parameters('sites_customer_demo_name'), '.azurewebsites.net')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_name'))]"
+            ],
+            "properties": {
+                "siteName": "customer-demo",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/', parameters('sites_customer_demo_client_eastus_name'), '.azurewebsites.net')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
+            ],
+            "properties": {
+                "siteName": "customer-demo-client-eastus",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_customer_demo_germany_name'), '/', parameters('sites_customer_demo_germany_name'), '.azurewebsites.net')]",
+            "location": "Germany West Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
+            ],
+            "properties": {
+                "siteName": "customer-demo-germany",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "microsoft.alertsmanagement/smartdetectoralertrules",
+            "apiVersion": "2019-06-01",
+            "name": "[parameters('smartdetectoralertrules_failure_anomalies___customer_demo_name')]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_customer_demo_name'))]",
+                "[resourceId('microsoft.insights/actionGroups', parameters('actionGroups_Application_Insights_Smart_Detection_name'))]"
+            ],
+            "properties": {
+                "description": "Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.",
+                "state": "Enabled",
+                "severity": "Sev3",
+                "frequency": "PT1M",
+                "detector": {
+                    "id": "FailureAnomaliesDetector",
+                    "name": "Failure Anomalies",
+                    "description": "Detects if your application experiences an abnormal rise in the rate of HTTP requests or dependency calls that are reported as failed. The anomaly detection uses machine learning algorithms and occurs in near real time, tcustomerfore tcustomer's no need to define a frequency for this signal.<br/></br/>To help you triage and diagnose the problem, an analysis of the characteristics of the failures and related telemetry is provided with the detection. This feature works for any app, hosted in the cloud or on your own servers, that generates request or dependency telemetry - for example, if you have a worker role that calls <a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics#trackrequest\\\" target=\\\"_blank\\\">TrackRequest()</a> or <a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/application-insights/app-insights-api-custom-events-metrics#trackdependency\\\" target=\\\"_blank\\\">TrackDependency()</a>.<br/><br/><a class=\"ext-smartDetecor-link\" href=\\\"https://docs.microsoft.com/azure/azure-monitor/app/proactive-failure-diagnostics\\\" target=\\\"_blank\\\">Learn more about Failure Anomalies</a>",
+                    "supportedResourceTypes": [
+                        "ApplicationInsights"
+                    ]
+                },
+                "scope": [
+                    "[resourceId('microsoft.insights/components', parameters('components_customer_demo_name'))]"
+                ],
+                "actionGroups": {
+                    "groupIds": [
+                        "[resourceId('microsoft.insights/actionGroups', parameters('actionGroups_Application_Insights_Smart_Detection_name'))]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default/azure-webjobs-hosts')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storageaccountcustomerd8dad_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default/azure-webjobs-hosts')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storageaccountcustomerda280_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerd8dad_name'), '/default/azure-webjobs-secrets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storageaccountcustomerd8dad_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(parameters('storageAccounts_storageaccountcustomerda280_name'), '/default/azure-webjobs-secrets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_storageaccountcustomerda280_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Network/applicationGateways",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('applicationGateways_customer_demo_ag_name')]",
+            "location": "eastus",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_customer_demo_vnet_name'), 'gateway')]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_customer_demo_pip_name'))]",
+                "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', parameters('ApplicationGatewayWebApplicationFirewallPolicies_wafpolicyNew_name'))]"
+            ],
+            "properties": {
+                "sku": {
+                    "name": "WAF_v2",
+                    "tier": "WAF_v2",
+                    "capacity": 1
+                },
+                "gatewayIPConfigurations": [
+                    {
+                        "name": "appGatewayIpConfig",
+                        "properties": {
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_customer_demo_vnet_name'), 'gateway')]"
+                            }
+                        }
+                    }
+                ],
+                "sslCertificates": [],
+                "trustedRootCertificates": [],
+                "frontendIPConfigurations": [
+                    {
+                        "name": "appGwPublicFrontendIp",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_customer_demo_pip_name'))]"
+                            }
+                        }
+                    }
+                ],
+                "frontendPorts": [
+                    {
+                        "name": "port_80",
+                        "properties": {
+                            "port": 80
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "customer-demo-webapp",
+                        "properties": {
+                            "backendAddresses": [
+                                {
+                                    "fqdn": "customer-demo-webapp.azurewebsites.net"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "backendHttpSettingsCollection": [
+                    {
+                        "name": "customer-demo-webapp",
+                        "properties": {
+                            "port": 80,
+                            "protocol": "Http",
+                            "cookieBasedAffinity": "Disabled",
+                            "pickHostNameFromBackendAddress": true,
+                            "requestTimeout": 20,
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/probes/customer-demo-webappfa696144-fd47-4ab8-9f0c-e01ae733c03a')]"
+                            }
+                        }
+                    }
+                ],
+                "httpListeners": [
+                    {
+                        "name": "customer-demo-webapp",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    }
+                ],
+                "urlPathMaps": [],
+                "requestRoutingRules": [
+                    {
+                        "name": "customer-demo-webapp",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/httpListeners/customer-demo-webapp')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/backendAddressPools/customer-demo-webapp')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_customer_demo_ag_name')), '/backendHttpSettingsCollection/customer-demo-webapp')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "customer-demo-webappfa696144-fd47-4ab8-9f0c-e01ae733c03a",
+                        "properties": {
+                            "protocol": "Http",
+                            "path": "/",
+                            "interval": 30,
+                            "timeout": 30,
+                            "unhealthyThreshold": 3,
+                            "pickHostNameFromBackendHttpSettings": true,
+                            "minServers": 0,
+                            "match": {}
+                        }
+                    }
+                ],
+                "rewriteRuleSets": [],
+                "redirectConfigurations": [],
+                "privateLinkConfigurations": [],
+                "webApplicationFirewallConfiguration": {
+                    "enabled": true,
+                    "firewallMode": "Prevention",
+                    "ruleSetType": "OWASP",
+                    "ruleSetVersion": "3.0",
+                    "disabledRuleGroups": [],
+                    "requestBodyCheck": true,
+                    "maxRequestBodySizeInKb": 128,
+                    "fileUploadLimitInMb": 100
+                },
+                "enableHttp2": true,
+                "forceFirewallPolicyAssociation": true,
+                "firewallPolicy": {
+                    "id": "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', parameters('ApplicationGatewayWebApplicationFirewallPolicies_wafpolicyNew_name'))]"
+                }
+            }
+        }
+    ]
 }
