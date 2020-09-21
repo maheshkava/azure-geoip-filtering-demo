@@ -75,7 +75,11 @@
             "type": "String"
         }
     },
-    "variables": {},
+    "variables": {
+        "AppGatewayUri": "http://customer-demo.eastus.cloudapp.azure.com/",
+        "ContentDeliveryNetworkUri": "http://customer-demo-cdn.azureedge.net/",
+        "FrontDoorUri": "http://customer-demo-webapp.azurefd.net/"
+    },
     "resources": [
         {
             "type": "Microsoft.Cdn/profiles",
@@ -909,15 +913,15 @@
                         },
                         {
                             "name": "AppGatewayUri",
-                            "value": "http://customer-demo.eastus.cloudapp.azure.com/"
+                            "value": "[variables('AppGatewayUri')]"
                         },
                         {
                             "name": "ContentDeliveryNetworkUri",
-                            "value": "http://customer-demo.azureedge.net/"
+                            "value": "[variables('ContentDeliveryNetworkUri')]"
                         },
                         {
                             "name": "FrontDoorUri",
-                            "value": "http://customer-demo.azurefd.net/"
+                            "value": "[variables('FrontDoorUri')]"
                         }
                     ]
                 },
@@ -982,15 +986,15 @@
                         },
                         {
                             "name": "AppGatewayUri",
-                            "value": "http://customer-demo.eastus.cloudapp.azure.com/"
+                            "value": "[variables('AppGatewayUri')]"
                         },
                         {
                             "name": "ContentDeliveryNetworkUri",
-                            "value": "http://customer-demo.azureedge.net/"
+                            "value": "[variables('ContentDeliveryNetworkUri')]"
                         },
                         {
                             "name": "FrontDoorUri",
-                            "value": "http://customer-demo.azurefd.net/"
+                            "value": "[variables('FrontDoorUri')]"
                         }
                     ]
                 },
