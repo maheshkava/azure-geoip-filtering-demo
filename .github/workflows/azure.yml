@@ -32,8 +32,6 @@ jobs:
       
       - name: Install .NET Core SDK
         uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 2.1
       
       - name: Build & Publish testClient
         run: dotnet publish src/testClient -c Release
