@@ -9,7 +9,7 @@ namespace testClient
 {
   internal static class Utils
   {
-    internal static async Task<ObjectResult> PerformTest(string uri,
+    internal static async Task<ActionResult> PerformTest(string uri,
             ILogger log)
     {
       log.LogInformation($"Requesting: {uri}");
@@ -19,10 +19,18 @@ namespace testClient
         try
         {
           var response = await client.GetAsync(uri);
-          
-          log.LogInformation($"Response: {response.Content}");
+          var content = await response.Content.ReadAsStringAsync();
 
-          return new OkObjectResult("Looks Good!");
+          log.LogInformation($"Response ({response.StatusCode}): {content}");
+
+          if (response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+          {
+            return new OkObjectResult("Looks Good!");
+          }
+          else
+          {
+            return new StatusCodeResult((int)response.StatusCode);
+          }
         }
         catch (Exception e)
         {
