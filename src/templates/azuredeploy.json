@@ -885,6 +885,7 @@
                 "reserved": false,
                 "isXenon": false,
                 "hyperV": false,
+                "powerShellVersion": "~7",
                 "siteConfig": {
                     "appSettings": [
                         {
@@ -946,6 +947,7 @@
                 "reserved": false,
                 "isXenon": false,
                 "hyperV": false,
+                "powerShellVersion": "~7",
                 "siteConfig": {
                     "appSettings": [
                         {
