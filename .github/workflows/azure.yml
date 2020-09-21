@@ -25,7 +25,9 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Zip webapp files
-        run: zip -r webapp.zip src/webapp/
+        run: |
+          cd src/webapp/
+          zip -r webapp.zip .
       
       - name: Azure Login
         uses: Azure/login@v1
