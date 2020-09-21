@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "app_service_plan_name":{
+        "app_service_plan_name": {
             "defaultValue": "customer-demo-asp",
             "type": "String"
         },
@@ -1083,7 +1083,29 @@
                 "http20Enabled": false,
                 "minTlsVersion": "1.2",
                 "ftpsState": "AllAllowed",
-                "reservedInstanceCount": 0
+                "reservedInstanceCount": 0,
+                "appSettings": [
+                    {
+                        "name": "AzureWebJobsStorage",
+                        "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccounts_storageaccountcustomerd8dad_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name')),'2019-06-01').keys[0].value)]"
+                    },
+                    {
+                        "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                        "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccounts_storageaccountcustomerd8dad_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name')),'2019-06-01').keys[0].value)]"
+                    },
+                    {
+                        "name": "WEBSITE_CONTENTSHARE",
+                        "value": "[toLower(parameters('sites_customer_demo_client_eastus_name'))]"
+                    },
+                    {
+                        "name": "FUNCTIONS_WORKER_RUNTIME",
+                        "value": "powershell"
+                    },
+                    {
+                        "name": "FUNCTIONS_EXTENSION_VERSION",
+                        "value": "~3"
+                    }
+                ]
             }
         },
         {
@@ -1163,109 +1185,29 @@
                 "http20Enabled": false,
                 "minTlsVersion": "1.2",
                 "ftpsState": "AllAllowed",
-                "reservedInstanceCount": 0
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/functions",
-            "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/testCDN')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
-            ],
-            "properties": {
-                "script_root_path_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/",
-                "script_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/run.ps1",
-                "config_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/function.json",
-                "href": "https://customer-demo-client-eastus.azurewebsites.net/admin/functions/HttpTrigger1",
-                "config": {},
-                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/functions",
-            "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_customer_demo_germany_name'), '/testCDN')]",
-            "location": "Germany West Central",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
-            ],
-            "properties": {
-                "script_root_path_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/",
-                "script_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/run.ps1",
-                "config_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/HttpTrigger1/function.json",
-                "href": "https://customer-demo-germany.azurewebsites.net/admin/functions/HttpTrigger1",
-                "config": {},
-                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/functions",
-            "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/testAppGateway')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
-            ],
-            "properties": {
-                "script_root_path_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/",
-                "script_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/run.ps1",
-                "config_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/function.json",
-                "href": "https://customer-demo-client-eastus.azurewebsites.net/admin/functions/testAppGateway",
-                "config": {},
-                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/functions",
-            "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_customer_demo_germany_name'), '/testAppGateway')]",
-            "location": "Germany West Central",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
-            ],
-            "properties": {
-                "script_root_path_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/",
-                "script_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/run.ps1",
-                "config_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testAppGateway/function.json",
-                "href": "https://customer-demo-germany.azurewebsites.net/admin/functions/testAppGateway",
-                "config": {},
-                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/functions",
-            "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/testFrontDoor')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
-            ],
-            "properties": {
-                "script_root_path_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/",
-                "script_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/run.ps1",
-                "config_href": "https://customer-demo-client-eastus.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/function.json",
-                "href": "https://customer-demo-client-eastus.azurewebsites.net/admin/functions/testFrontDoor",
-                "config": {},
-                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/functions",
-            "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_customer_demo_germany_name'), '/testFrontDoor')]",
-            "location": "Germany West Central",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_germany_name'))]"
-            ],
-            "properties": {
-                "script_root_path_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/",
-                "script_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/run.ps1",
-                "config_href": "https://customer-demo-germany.azurewebsites.net/admin/vfs/site/wwwroot/testFrontDoor/function.json",
-                "href": "https://customer-demo-germany.azurewebsites.net/admin/functions/testFrontDoor",
-                "config": {},
-                "test_data": "{\"method\":\"post\",\"queryStringParams\":[],\"headers\":[],\"body\":{\"name\":\"Azure\"}}"
+                "reservedInstanceCount": 0,
+                "appSettings": [
+                    {
+                        "name": "AzureWebJobsStorage",
+                        "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccounts_storageaccountcustomerda280_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name')),'2019-06-01').keys[0].value)]"
+                    },
+                    {
+                        "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                        "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccounts_storageaccountcustomerda280_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerda280_name')),'2019-06-01').keys[0].value)]"
+                    },
+                    {
+                        "name": "WEBSITE_CONTENTSHARE",
+                        "value": "[toLower(parameters('sites_customer_demo_germany_name'))]"
+                    },
+                    {
+                        "name": "FUNCTIONS_WORKER_RUNTIME",
+                        "value": "powershell"
+                    },
+                    {
+                        "name": "FUNCTIONS_EXTENSION_VERSION",
+                        "value": "~3"
+                    }
+                ]
             }
         },
         {
