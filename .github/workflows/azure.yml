@@ -13,7 +13,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  deploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     env:
@@ -38,7 +38,7 @@ jobs:
         with:
           inlineScript: |
             az group create -g $RESOURCE_GROUP -l $LOCATION
-            az deployment group create --name "azure-geoip-filtering-demo" --template-file src/templates/azuredeploy.json
+            az deployment group create --name "azure-geoip-filtering-demo" --resource-group $RESOURCE_GROUP --template-file src/templates/azuredeploy.json
 
       - name: Deploy Web App
         uses: azure/CLI@v1
