@@ -34,8 +34,8 @@
             "defaultValue": "ASP-customerdemo-aa82",
             "type": "String"
         },
-        "sites_customer_demo_client_[resourceGroup().location]_name": {
-            "defaultValue": "customer-demo-client-[resourceGroup().location]",
+        "sites_customer_demo_client_eastus_name": {
+            "defaultValue": "customer-demo-client-us",
             "type": "String"
         },
         "virtualNetworks_customer_demo_vnet_name": {
@@ -232,7 +232,7 @@
                 "idleTimeoutInMinutes": 4,
                 "dnsSettings": {
                     "domainNameLabel": "customer-demo",
-                    "fqdn": "customer-demo.[resourceGroup().location].cloudapp.azure.com"
+                    "fqdn": "customer-demo.eastus.cloudapp.azure.com"
                 },
                 "ipTags": []
             }
@@ -861,7 +861,7 @@
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2018-11-01",
-            "name": "[parameters('sites_customer_demo_client_[resourceGroup().location]_name')]",
+            "name": "[parameters('sites_customer_demo_client_eastus_name')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_customerdemo_aa82_name'))]"
@@ -871,12 +871,12 @@
                 "enabled": true,
                 "hostNameSslStates": [
                     {
-                        "name": "[concat(parameters('sites_customer_demo_client_[resourceGroup().location]_name'), '.azurewebsites.net')]",
+                        "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '.azurewebsites.net')]",
                         "sslState": "Disabled",
                         "hostType": "Standard"
                     },
                     {
-                        "name": "[concat(parameters('sites_customer_demo_client_[resourceGroup().location]_name'), '.scm.azurewebsites.net')]",
+                        "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '.scm.azurewebsites.net')]",
                         "sslState": "Disabled",
                         "hostType": "Repository"
                     }
@@ -898,7 +898,7 @@
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[toLower(parameters('sites_customer_demo_client_[resourceGroup().location]_name'))]"
+                            "value": "[toLower(parameters('sites_customer_demo_client_eastus_name'))]"
                         },
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
@@ -1057,10 +1057,10 @@
         {
             "type": "Microsoft.Web/sites/config",
             "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_customer_demo_client_[resourceGroup().location]_name'), '/web')]",
+            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/web')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_[resourceGroup().location]_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
             ],
             "properties": {
                 "numberOfWorkers": -1,
@@ -1081,7 +1081,7 @@
                 "httpLoggingEnabled": false,
                 "logsDirectorySizeLimit": 35,
                 "detailedErrorLoggingEnabled": false,
-                "publishingUsername": "$customer-demo-client-[resourceGroup().location]",
+                "publishingUsername": "$customer-demo-client-eastus",
                 "azureStorageAccounts": {},
                 "scmType": "None",
                 "use32BitWorkerProcess": true,
@@ -1230,13 +1230,13 @@
         {
             "type": "Microsoft.Web/sites/hostNameBindings",
             "apiVersion": "2018-11-01",
-            "name": "[concat(parameters('sites_customer_demo_client_[resourceGroup().location]_name'), '/', parameters('sites_customer_demo_client_[resourceGroup().location]_name'), '.azurewebsites.net')]",
+            "name": "[concat(parameters('sites_customer_demo_client_eastus_name'), '/', parameters('sites_customer_demo_client_eastus_name'), '.azurewebsites.net')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_[resourceGroup().location]_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('sites_customer_demo_client_eastus_name'))]"
             ],
             "properties": {
-                "siteName": "customer-demo-client-[resourceGroup().location]",
+                "siteName": "customer-demo-client-eastus",
                 "hostNameType": "Verified"
             }
         },
