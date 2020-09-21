@@ -19,7 +19,7 @@ jobs:
     env:
       LOCATION: "eastus"
       RESOURCE_GROUP: "customer-demo"
-      WEBAPPZIPFILE: "webapp.zip"
+      WEBAPPZIPFILE: "/github/workspace/webapp.zip"
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v2
