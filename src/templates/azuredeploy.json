@@ -885,7 +885,30 @@
                 "reserved": false,
                 "isXenon": false,
                 "hyperV": false,
-                "siteConfig": {},
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccounts_storageaccountcustomerd8dad_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name')),'2019-06-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccounts_storageaccountcustomerd8dad_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name')),'2019-06-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(parameters('sites_customer_demo_client_eastus_name'))]"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "powershell"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~3"
+                        }
+                    ]
+                },
                 "scmSiteAlsoStopped": false,
                 "clientAffinityEnabled": true,
                 "clientCertEnabled": false,
@@ -1106,29 +1129,7 @@
                 "http20Enabled": false,
                 "minTlsVersion": "1.2",
                 "ftpsState": "AllAllowed",
-                "reservedInstanceCount": 0,
-                "appSettings": [
-                    {
-                        "name": "AzureWebJobsStorage",
-                        "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccounts_storageaccountcustomerd8dad_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name')),'2019-06-01').keys[0].value)]"
-                    },
-                    {
-                        "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                        "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccounts_storageaccountcustomerd8dad_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_storageaccountcustomerd8dad_name')),'2019-06-01').keys[0].value)]"
-                    },
-                    {
-                        "name": "WEBSITE_CONTENTSHARE",
-                        "value": "[toLower(parameters('sites_customer_demo_client_eastus_name'))]"
-                    },
-                    {
-                        "name": "FUNCTIONS_WORKER_RUNTIME",
-                        "value": "powershell"
-                    },
-                    {
-                        "name": "FUNCTIONS_EXTENSION_VERSION",
-                        "value": "~3"
-                    }
-                ]
+                "reservedInstanceCount": 0
             }
         },
         {
