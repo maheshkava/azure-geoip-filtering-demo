@@ -27,7 +27,7 @@ jobs:
       - name: Zip webapp files
         run: |
           cd src/webapp/
-          zip -r webapp.zip .
+          zip -r $WEBAPPZIPFILE .
       
       - name: Azure Login
         uses: Azure/login@v1
