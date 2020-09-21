@@ -46,7 +46,7 @@ jobs:
         with:
           inlineScript: |
             az group create -g $RESOURCE_GROUP -l $LOCATION
-            az deployment group create --name "azure-geoip-filtering-demo" --resource-group $RESOURCE_GROUP --template-file src/templates/azuredeploy.json
+            az deployment group create --name "azure-geoip-filtering-demo-$GITHUB_RUN_ID" --resource-group $RESOURCE_GROUP --template-file src/templates/azuredeploy.json
 
       - name: Deploy Web App
         uses: azure/CLI@v1
