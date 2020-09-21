@@ -906,6 +906,18 @@
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
                             "value": "~3"
+                        },
+                        {
+                            "name": "AppGatewayUri",
+                            "value": "http://customer-demo.eastus.cloudapp.azure.com/"
+                        },
+                        {
+                            "name": "ContentDeliveryNetworkUri",
+                            "value": "http://customer-demo.azureedge.net/"
+                        },
+                        {
+                            "name": "FrontDoorUri",
+                            "value": "http://customer-demo.azurefd.net/"
                         }
                     ]
                 },
@@ -967,6 +979,18 @@
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
                             "value": "~3"
+                        },
+                        {
+                            "name": "AppGatewayUri",
+                            "value": "http://customer-demo.eastus.cloudapp.azure.com/"
+                        },
+                        {
+                            "name": "ContentDeliveryNetworkUri",
+                            "value": "http://customer-demo.azureedge.net/"
+                        },
+                        {
+                            "name": "FrontDoorUri",
+                            "value": "http://customer-demo.azurefd.net/"
                         }
                     ]
                 },
