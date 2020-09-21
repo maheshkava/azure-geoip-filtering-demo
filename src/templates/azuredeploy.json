@@ -885,7 +885,6 @@
                 "reserved": false,
                 "isXenon": false,
                 "hyperV": false,
-                "powerShellVersion": "~7",
                 "siteConfig": {
                     "appSettings": [
                         {
@@ -898,11 +897,11 @@
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[toLower(parameters('sites_customer_demo_client_eastus_name'))]"
+                            "value": "[concat(toLower(parameters('sites_customer_demo_client_eastus_name')),'6789')]"
                         },
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "powershell"
+                            "value": "dotnet"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -911,7 +910,7 @@
                     ]
                 },
                 "scmSiteAlsoStopped": false,
-                "clientAffinityEnabled": true,
+                "clientAffinityEnabled": false,
                 "clientCertEnabled": false,
                 "hostNamesDisabled": false,
                 "containerSize": 1536,
@@ -947,7 +946,6 @@
                 "reserved": false,
                 "isXenon": false,
                 "hyperV": false,
-                "powerShellVersion": "~7",
                 "siteConfig": {
                     "appSettings": [
                         {
@@ -960,11 +958,11 @@
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[toLower(parameters('sites_customer_demo_germany_name'))]"
+                            "value": "[concat(toLower(parameters('sites_customer_demo_germany_name')), '6789')]"
                         },
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
-                            "value": "powershell"
+                            "value": "dotnet"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -973,7 +971,7 @@
                     ]
                 },
                 "scmSiteAlsoStopped": false,
-                "clientAffinityEnabled": true,
+                "clientAffinityEnabled": false,
                 "clientCertEnabled": false,
                 "hostNamesDisabled": false,
                 "containerSize": 1536,
