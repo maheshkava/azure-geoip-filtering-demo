@@ -18,7 +18,7 @@ namespace testClient
 
         [FunctionName("testAppGateway")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             string uri = config.GetValue<string>("AppGatewayUri");
