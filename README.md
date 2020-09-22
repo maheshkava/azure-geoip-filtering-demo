@@ -8,7 +8,7 @@ Demonstrates GeoIP filtering using different Azure Services
 - [Azure Application Gateway w/WAF](https://docs.microsoft.com/azure/application-gateway/)
 
 ## Using this repo
-Deploy using GitHub Actions or Azure Pipelines.
+Deploy using GitHub Actions.
 
 To deploy using GitHub Actions, you will need an AZURE_CREDENTIALS secret, see [this](https://github.com/marketplace/actions/azure-login) for more info.
 
