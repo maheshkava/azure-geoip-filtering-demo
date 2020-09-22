@@ -1,14 +1,14 @@
 printf "Running Tests from US"
-curl -X POST https://customer-demo-client-us.azurewebsites.net/api/testAppGateway?code=$code
+curl -d "" -X POST "https://customer-demo-client-us.azurewebsites.net/api/testAppGateway?code=$code1"
 printf "\n"
-curl -X POST https://customer-demo-client-us.azurewebsites.net/api/testContentDeliveryNetwork?code=$code
+curl -d "" -X POST "https://customer-demo-client-us.azurewebsites.net/api/testContentDeliveryNetwork?code=$code1"
 printf "\n"
-curl -X POST https://customer-demo-client-us.azurewebsites.net/api/testFrontDoor?code=$code
+curl -d "" -X POST "https://customer-demo-client-us.azurewebsites.net/api/testFrontDoor?code=$code1"
 printf "\n"
 printf "Running Tests from Germany"
-curl -X POST https://customer-demo-client-germany.azurewebsites.net/api/testAppGateway?code=$code
+curl -d "" -X POST "https://customer-demo-client-germany.azurewebsites.net/api/testAppGateway?code=$code2"
 printf "\n"
-curl -X POST https://customer-demo-client-germany.azurewebsites.net/api/testContentDeliveryNetwork?code=$code
+curl -d "" -X POST "https://customer-demo-client-germany.azurewebsites.net/api/testContentDeliveryNetwork?code=$code2"
 printf "\n"
-curl -X POST https://customer-demo-client-germany.azurewebsites.net/api/testFrontDoor?code=$code
+curl -d "" -X POST "https://customer-demo-client-germany.azurewebsites.net/api/testFrontDoor?code=$code2"
 printf "\n"
