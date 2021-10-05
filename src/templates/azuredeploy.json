@@ -76,7 +76,7 @@
         }
     },
     "variables": {
-        "AppGatewayUri": "http://customer-demo.eastus.cloudapp.azure.com/",
+        "AppGatewayUri": "http://customer-demo.westeurope.cloudapp.azure.com/",
         "ContentDeliveryNetworkUri": "http://customer-demo-cdn.azureedge.net/",
         "FrontDoorUri": "http://customer-demo-webapp.azurefd.net/"
     },
